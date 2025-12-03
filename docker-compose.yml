@@ -1,0 +1,21 @@
+services:
+  tempo-node:
+    platform: linux/amd64
+    build:
+      context: .
+      dockerfile: Dockerfile.tempo
+    container_name: tempo-dev-node
+    ports:
+      - "8545:8545"      # RPC 
+      - "30303:30303"    # P2P 
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8545"]
+      interval: 2s
+      timeout: 5s
+      retries: 10
+    networks:
+      - tempo-test
+
+networks:
+  tempo-test:
+    driver: bridge

@@ -1,0 +1,91 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-version: ['1.21', '1.22', '1.23']
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: ${{ matrix.go-version }}
+
+    - name: Cache Go modules
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: ${{ runner.os }}-go-${{ matrix.go-version }}-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-go-${{ matrix.go-version }}-
+
+    - name: Download dependencies
+      run: go mod download
+
+    - name: Run checks and tests
+      run: make check
+
+    - name: Build examples
+      run: make build_examples
+
+  integration:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.22'
+
+    - name: Download dependencies
+      run: go mod download
+
+    - name: Start Tempo node
+      run: docker compose up -d
+
+    - name: Wait for Tempo node to be ready
+      run: |
+        echo "Waiting for Tempo node to start..."
+        for i in {1..30}; do
+          if curl -s http://localhost:8545 > /dev/null 2>&1; then
+            echo "Tempo node is ready!"
+            exit 0
+          fi
+          echo "Attempt $i: Tempo node not ready yet..."
+          sleep 2
+        done
+        echo "Tempo node failed to start"
+        docker compose logs
+        exit 1
+
+    - name: Run integration tests
+      run: make integration
+      env:
+        TEMPO_RPC_URL: http://localhost:8545
+
+    - name: Show Tempo node logs on failure
+      if: failure()
+      run: docker compose logs
+
+    - name: Stop Tempo node
+      if: always()
+      run: docker compose down

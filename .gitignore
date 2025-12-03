@@ -1,0 +1,67 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool
+*.out
+cover.html
+
+# Go workspace file
+go.work
+
+# Build artifacts
+/server
+/server.exe
+/simple-send
+/feepayer
+bin/
+
+# Profiling files
+*.pprof
+cpu.pprof
+mem.pprof
+
+# Environment files (for examples)
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+server.log
+
+# IDE specific files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Temporary files
+tmp/
+temp/
+
+# Docker volumes (if running locally without docker-compose)
+.docker/
+
+# Node.js (for TypeScript client in examples/feepayer/client)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# TypeScript build output (for examples)
+dist/
+build/
+*.tsbuildinfo
+
+# Go vendor directory
+vendor/
