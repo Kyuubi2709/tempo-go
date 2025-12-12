@@ -10,7 +10,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// FuzzSignAndVerify tests the sign -> verify round trip.
 func FuzzSignAndVerify(f *testing.F) {
 	f.Add([]byte("test message"))
 	f.Add([]byte{})
@@ -19,10 +18,6 @@ func FuzzSignAndVerify(f *testing.F) {
 	f.Add(make([]byte, 1024))
 
 	f.Fuzz(func(t *testing.T, data []byte) {
-		if len(data) > 4096 {
-			data = data[:4096]
-		}
-
 		privateKey, err := crypto.GenerateKey()
 		if err != nil {
 			return
@@ -30,23 +25,23 @@ func FuzzSignAndVerify(f *testing.F) {
 		sgn := NewSignerFromKey(privateKey)
 
 		sig, err := sgn.SignData(data)
-		require.NoError(t, err, "failed to sign data")
+		require.NoError(t, err)
 
-		require.NotNil(t, sig.R, "signature R is nil")
-		require.NotNil(t, sig.S, "signature S is nil")
-		assert.LessOrEqual(t, sig.YParity, uint8(1), "YParity should be 0 or 1")
+		require.NotNil(t, sig.R)
+		require.NotNil(t, sig.S)
+		assert.LessOrEqual(t, sig.YParity, uint8(1))
 
 		v := sig.V()
-		assert.True(t, v == 27 || v == 28, "V should be 27 or 28, got %d", v)
+		assert.True(t, v == 27 || v == 28)
 
 		hash := crypto.Keccak256Hash(data)
 		valid, err := sgn.VerifySignature(hash, sig)
-		require.NoError(t, err, "failed to verify signature")
-		assert.True(t, valid, "signature verification failed for data we just signed")
+		require.NoError(t, err)
+		assert.True(t, valid)
 
 		recoveredAddr, err := RecoverAddress(hash, sig)
-		require.NoError(t, err, "failed to recover address")
-		assert.Equal(t, sgn.Address(), recoveredAddr, "recovered address mismatch")
+		require.NoError(t, err)
+		assert.Equal(t, sgn.Address(), recoveredAddr)
 	})
 }
 
@@ -69,10 +64,8 @@ func FuzzRecoverAddressWithMalformedSignature(f *testing.F) {
 
 		r := new(big.Int).SetBytes(rBytes)
 		s := new(big.Int).SetBytes(sBytes)
-
 		sig := NewSignature(r, s, yParity)
 
-		// never panic
 		_, _ = RecoverAddress(hash, sig)
 	})
 }

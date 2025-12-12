@@ -12,20 +12,19 @@ import (
 	"github.com/tempoxyz/tempo-go/pkg/signer"
 )
 
-// FuzzSerializeDeserializeRoundTrip tests that serialize -> deserialize produces equivalent transactions.
 func FuzzSerializeDeserializeRoundTrip(f *testing.F) {
 	f.Add(
-		uint64(42424),      // chainID
-		uint64(1000000000), // maxPriorityFeePerGas
-		uint64(2000000000), // maxFeePerGas
-		uint64(21000),      // gas
-		uint64(0),          // nonceKey
-		uint64(1),          // nonce
-		uint64(0),          // validBefore
-		uint64(0),          // validAfter
-		[]byte{0x12, 0x34, 0x56, 0x78, 0x90, 0x12, 0x34, 0x56, 0x78, 0x90, 0x12, 0x34, 0x56, 0x78, 0x90, 0x12, 0x34, 0x56, 0x78, 0x90}, // toAddress
-		[]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01},                                                                         // value
-		[]byte{0xaa, 0xbb, 0xcc}, // callData
+		uint64(42424),
+		uint64(1000000000),
+		uint64(2000000000),
+		uint64(21000),
+		uint64(0),
+		uint64(1),
+		uint64(0),
+		uint64(0),
+		[]byte{0x12, 0x34, 0x56, 0x78, 0x90, 0x12, 0x34, 0x56, 0x78, 0x90, 0x12, 0x34, 0x56, 0x78, 0x90, 0x12, 0x34, 0x56, 0x78, 0x90},
+		[]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01},
+		[]byte{0xaa, 0xbb, 0xcc},
 	)
 
 	f.Fuzz(func(t *testing.T,
@@ -57,10 +56,6 @@ func FuzzSerializeDeserializeRoundTrip(f *testing.F) {
 			value.SetBytes(valueBytes)
 		}
 
-		if len(callData) > 1024 {
-			callData = callData[:1024]
-		}
-
 		tx := NewBuilder(big.NewInt(int64(chainID))).
 			SetMaxPriorityFeePerGas(big.NewInt(int64(maxPriorityFeePerGas))).
 			SetMaxFeePerGas(big.NewInt(int64(maxFeePerGas))).
@@ -78,24 +73,23 @@ func FuzzSerializeDeserializeRoundTrip(f *testing.F) {
 		}
 
 		deserializedTx, err := Deserialize(serialized)
-		require.NoError(t, err, "failed to deserialize valid serialization")
+		require.NoError(t, err)
 
-		assert.Equal(t, 0, tx.ChainID.Cmp(deserializedTx.ChainID), "ChainID mismatch")
-		assert.Equal(t, tx.Gas, deserializedTx.Gas, "Gas mismatch")
-		assert.Equal(t, tx.Nonce, deserializedTx.Nonce, "Nonce mismatch")
-		assert.Equal(t, 0, tx.NonceKey.Cmp(deserializedTx.NonceKey), "NonceKey mismatch")
-		assert.Equal(t, tx.ValidBefore, deserializedTx.ValidBefore, "ValidBefore mismatch")
-		assert.Equal(t, tx.ValidAfter, deserializedTx.ValidAfter, "ValidAfter mismatch")
-		assert.Len(t, deserializedTx.Calls, len(tx.Calls), "Calls length mismatch")
+		assert.Equal(t, 0, tx.ChainID.Cmp(deserializedTx.ChainID))
+		assert.Equal(t, tx.Gas, deserializedTx.Gas)
+		assert.Equal(t, tx.Nonce, deserializedTx.Nonce)
+		assert.Equal(t, 0, tx.NonceKey.Cmp(deserializedTx.NonceKey))
+		assert.Equal(t, tx.ValidBefore, deserializedTx.ValidBefore)
+		assert.Equal(t, tx.ValidAfter, deserializedTx.ValidAfter)
+		assert.Len(t, deserializedTx.Calls, len(tx.Calls))
 
 		if len(tx.Calls) > 0 && len(deserializedTx.Calls) > 0 {
-			assert.Equal(t, 0, tx.Calls[0].Value.Cmp(deserializedTx.Calls[0].Value), "Call value mismatch")
-			assert.True(t, bytes.Equal(tx.Calls[0].Data, deserializedTx.Calls[0].Data), "Call data mismatch")
+			assert.Equal(t, 0, tx.Calls[0].Value.Cmp(deserializedTx.Calls[0].Value))
+			assert.True(t, bytes.Equal(tx.Calls[0].Data, deserializedTx.Calls[0].Data))
 		}
 	})
 }
 
-// FuzzDeserializeMalformed tests that deserialization handles malformed input gracefully.
 func FuzzDeserializeMalformed(f *testing.F) {
 	f.Add([]byte("0x76"))
 	f.Add([]byte("0x78"))
@@ -105,12 +99,10 @@ func FuzzDeserializeMalformed(f *testing.F) {
 	f.Add([]byte("0x76f83b82a5e880808094123456789012345678901234567890123456789080c0808080808080c0"))
 
 	f.Fuzz(func(t *testing.T, data []byte) {
-		// Should never panic, regardless of input
 		_, _ = Deserialize(string(data))
 	})
 }
 
-// FuzzSignedTransactionRoundTrip tests full sign -> serialize -> deserialize -> verify flow.
 func FuzzSignedTransactionRoundTrip(f *testing.F) {
 	f.Add(
 		uint64(42424),
@@ -129,10 +121,7 @@ func FuzzSignedTransactionRoundTrip(f *testing.F) {
 			return
 		}
 
-		if len(callData) > 512 {
-			callData = callData[:512]
-		}
-
+		// grab 20 bytes to common.Address
 		var toAddress common.Address
 		if len(toAddressBytes) >= 20 {
 			copy(toAddress[:], toAddressBytes[:20])
@@ -157,14 +146,14 @@ func FuzzSignedTransactionRoundTrip(f *testing.F) {
 		}
 
 		serialized, err := Serialize(tx, nil)
-		require.NoError(t, err, "failed to serialize signed transaction")
+		require.NoError(t, err)
 
 		deserializedTx, err := Deserialize(serialized)
-		require.NoError(t, err, "failed to deserialize signed transaction")
+		require.NoError(t, err)
 
 		recoveredAddr, err := VerifySignature(deserializedTx)
-		require.NoError(t, err, "failed to verify signature")
+		require.NoError(t, err)
 
-		assert.Equal(t, sgn.Address(), recoveredAddr, "recovered address mismatch")
+		assert.Equal(t, sgn.Address(), recoveredAddr)
 	})
 }
