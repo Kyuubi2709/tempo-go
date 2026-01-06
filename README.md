@@ -149,11 +149,11 @@ client.SendTransaction(tx)
 
 ## Packages
 
-| Package       | Description                                        | Documentation                                                       |
-| ------------- | -------------------------------------------------- | ------------------------------------------------------------------- |
-| `transaction` | TempoTransaction encoding, signing, and validation | [README](pkg/transaction/README.md)                                 |
-| `client`      | RPC client for interacting with Tempo nodes        | [GoDoc](https://pkg.go.dev/github.com/tempoxyz/tempo-go/pkg/client) |
-| `signer`      | Key management and signature generation            | [GoDoc](https://pkg.go.dev/github.com/tempoxyz/tempo-go/pkg/signer) |
+| Package       | Description                                        | Documentation                                                            |
+|---------------|----------------------------------------------------|--------------------------------------------------------------------------|
+| `transaction` | TempoTransaction encoding, signing, and validation | [GoDoc](https://pkg.go.dev/github.com/tempoxyz/tempo-go/pkg/transaction) |
+| `client`      | RPC client for interacting with Tempo nodes        | [GoDoc](https://pkg.go.dev/github.com/tempoxyz/tempo-go/pkg/client)      |
+| `signer`      | Key management and signature generation            | [GoDoc](https://pkg.go.dev/github.com/tempoxyz/tempo-go/pkg/signer)      |
 
 ## Testing
 
